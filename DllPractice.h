@@ -12,8 +12,8 @@ extern "C" DllPractice_API void PrintDevices();
 extern "C" DllPractice_API void PrintEndpointNames();
 
 
-extern "C" DllPractice_API void SetDefaultDevices(LPCWSTR devID);
-extern "C" DllPractice_API void PrintDefaultAudioEndpoint();
+extern "C" DllPractice_API void SetDefaultDevices(LPCWSTR devID, int erole);
+extern "C" DllPractice_API void PrintDefaultAudioEndpoint(int input);
 
 
 

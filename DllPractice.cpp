@@ -36,9 +36,8 @@ IMMDeviceEnumerator* pEnumerator = NULL;
 IMMDeviceCollection* pCollection = NULL;
 IMMDevice* pEndpoint = NULL;
 IPropertyStore* pProps = NULL;
-
-const ERole ERole_role = eMultimedia;
-
+ERole role = eMultimedia;
+std::string isroleName = "unknown";
 
 
 //const LPCWSTR is_deviceID = L"{0.0.0.00000000}.{1c5d88b5-2564-4521-ba64-ed9630e9bc53}";
@@ -46,6 +45,28 @@ const ERole ERole_role = eMultimedia;
 //beats headset correct one
 //const LPCWSTR is_deviceID = L"{0.0.0.00000000}.{ff4f7326-16b9-45ec-9f78-6c1ea610d688}";
 
+
+void IseRoleSwitch(int input=0)
+{
+    #pragma region eRole Switch
+    
+        if (input == 0)
+        {
+            isroleName = "eConsole";
+            role = eConsole;
+        }
+        else if (input == 1)
+        {
+            isroleName = "eMultimedia";
+            role = eMultimedia;
+        }
+        else if (input == 2)
+        {
+            isroleName = "eCommunications";
+            role = eCommunications;
+        }
+    #pragma endregion eRole Switch
+}
 
 
 /// <summary>
@@ -257,9 +278,10 @@ void PrintDevices()
 }
 
 
-void GetDefaultAudioEndpoint()
+void GetDefaultAudioEndpoint(int input=0)
 {
-    ERole role = eMultimedia;
+    IseRoleSwitch(input);
+
 #pragma region  Set Variables
     HRESULT hr = S_OK;
     LPWSTR pwszID = NULL;
@@ -269,12 +291,12 @@ void GetDefaultAudioEndpoint()
     //IMMDeviceCollection* pCollection = NULL;
     //IMMDevice* pEndpoint = NULL;
     //IPropertyStore* pProps = NULL;
+    
 
+    
 
 #pragma endregion
-
-#pragma endregion  
-
+  
 #pragma region Create COM
     //hr = CoCreateInstance
     //(
@@ -303,17 +325,50 @@ void GetDefaultAudioEndpoint()
     hr = (pEndpoint->GetId(&pwszID));
 #pragma endregion 
 
+#pragma region Get Audio Endpoint Properties
 
-    printf("Endpoint FriendlyName: \"%S\" \n", pwszID);
+    hr = (*pEndpoint).OpenPropertyStore
+    (
+        STGM_READ,
+        &pProps
+    );
+    EXIT_ON_ERROR(hr)
 
-    printf("Endpoint Guid: \"%S\"\n", pwszID);
+    PROPVARIANT varName;
+    // Initialize container for property value.
+    PropVariantInit(&varName);
+
+    // Get the endpoint's friendly-name property.
+    //hr = pProps->GetValue(
+    //    PKEY_Device_FriendlyName, &varName);
+    hr = (*pProps).GetValue
+    (        
+        PKEY_Device_FriendlyName,
+        &varName
+    );
+    // testing 
+    ///if (varName.vt != VT_EMPTY)
+    ///{
+    ///    std::cout << "VarName not empty";
+    ///}
+#pragma endregion Get Audio Endpoint Properties
+    
+#pragma region Output Data  
+    std::cout<<"Role: "<<role << "\n" "Role FriendlyName : "<<isroleName<< "\n";
+
+    ///std:cout cannot convert LPWSTR to readable text///
+    ///std::cout << " via cout Endpoint FriendlyName: " << varName.pwszVal<< "\n";
+    printf(" Endpoint FriendlyName: \"%S\" \n", varName.pwszVal);
+    
+    //printf(" Endpoint FriendlyName : \"%S\"\n", pwszID);
+
+    printf(" Endpoint Guid: \"%S\"\n", pwszID);
+#pragma endregion Output Data
+
     SAFE_RELEASE(pEndpoint)
         //SAFE_RELEASE(pCollection)
     CoTaskMemFree(pwszID);
         return;
-
-
-
 
 Exit:
     printf("Error!\n");
@@ -325,7 +380,7 @@ Exit:
 
 }
 
-void PrintDefaultAudioEndpoint()
+void PrintDefaultAudioEndpoint(int input=0)
 {
     std::cout << "Hello World!\n";
     CoInitialize(NULL);
@@ -334,7 +389,7 @@ void PrintDefaultAudioEndpoint()
 
 
     std::cout << "Executing COM...\n";
-    GetDefaultAudioEndpoint();
+    GetDefaultAudioEndpoint(input);
 
     CoUninitialize();
     OleUninitialize();
@@ -342,8 +397,9 @@ void PrintDefaultAudioEndpoint()
 }
 
 
-HRESULT RegisterDevice(LPCWSTR devID, ERole role= ERole_role)
+HRESULT RegisterDevice(LPCWSTR devID, int erole=0)
 {
+    IseRoleSwitch(erole);
     IPolicyConfig* pPolicyConfig = nullptr;
 
     HRESULT hr = CoCreateInstance(__uuidof(CPolicyConfigClient), NULL, CLSCTX_ALL, __uuidof(IPolicyConfig), (LPVOID*)&pPolicyConfig);
@@ -369,7 +425,7 @@ HRESULT RegisterDevice(LPCWSTR devID, ERole role= ERole_role)
     return hr;
 }
 
-void SetDefaultDevices(LPCWSTR devID)
+void SetDefaultDevices(LPCWSTR devID, int erole=0)
 {
     
     CoInitialize(NULL);
@@ -379,7 +435,7 @@ void SetDefaultDevices(LPCWSTR devID)
     HRESULT isresult;
 
     //isresult = RegisterDevice(is_deviceID
-    isresult = RegisterDevice(devID);
+    isresult = RegisterDevice(devID,erole);
 
 
    CoUninitialize();
