@@ -1,20 +1,25 @@
-// DllPractice.h - Contains declarations of math functions
 #pragma once
 
-#ifdef DllPractice_EXPORTS
-#define DllPractice_API __declspec(dllexport)
-#else
-#define DllPractice_API __declspec(dllimport)
-#endif
+//#ifdef Dllexport
+//#define Dllexport __declspec(dllexport)
+//#else
+//#define DllImport __declspec(dllimport)
+//#endif
 
-extern "C" DllPractice_API void PrintDevices();
+/// Dll Macros Import/Export
+#define DllExport __declspec(dllexport)
+#define DllImport __declspec(dllimport)
 
-extern "C" DllPractice_API void PrintEndpointNames();
+extern "C" DllExport void PrintDevices();
+
+extern "C" DllExport void PrintEndpointNames();
 
 
-extern "C" DllPractice_API void SetDefaultDevices(LPCWSTR devID, int erole);
-extern "C" DllPractice_API void PrintDefaultAudioEndpoint(int input);
+extern "C" DllExport void SetDefaultDevices(LPCWSTR devID, int erole);
+extern "C" DllExport void PrintDefaultAudioEndpoint(int input);
 
+extern "C" DllExport void PrintDefaultAudioEndpoint(int input);
 
-
+void PrintDefaultAudioEndpoint(int input);
+void SetDefaultDevices(LPCWSTR devID, int erole);
 
